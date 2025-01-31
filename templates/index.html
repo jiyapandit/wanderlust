@@ -1,0 +1,333 @@
+<!-- templates/index.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wanderlust</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="background-wrapper"></div>
+    
+    <div class="container">
+        <div class="chat-box">
+            <div class="header">
+                <h1>🗺️ Globetrotter Guide</h1>
+                <div class="quick-actions">
+                    <button onclick="quickAction('3-day Paris itinerary under $1000')">Paris Budget</button>
+                    <button onclick="quickAction('Family-friendly Tokyo 5-day plan')">Tokyo Family</button>
+                    <button onclick="quickAction('Romantic Bali getaway plan')">Bali Honeymoon</button>
+                </div>
+            </div>
+            
+            <div class="chat-area" id="chat-container"></div>
+            
+            <div class="input-section">
+                <button class="icon-btn" onclick="toggleVoice()">
+                    <span id="mic-icon">🎤</span>
+                </button>
+                <input type="text" id="user-input" 
+                    placeholder="Ask or speak your travel question..."
+                    autocomplete="off">
+                <button onclick="sendMessage()">Send ➤</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let recognition;
+        let isListening = false;
+        const userId = Date.now().toString(); // Simple user ID
+
+        // Initialize voice recognition
+        if ('webkitSpeechRecognition' in window) {
+            recognition = new webkitSpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                document.getElementById('user-input').value = transcript;
+                toggleVoice();
+            };
+
+            recognition.onerror = (event) => {
+                console.error('Speech recognition error:', event.error);
+                toggleVoice();
+            };
+        }
+
+        function toggleVoice() {
+            if (!recognition) {
+                alert('Speech recognition not supported in this browser');
+                return;
+            }
+            
+            isListening = !isListening;
+            document.getElementById('mic-icon').textContent = isListening ? '🔴' : '🎤';
+            isListening ? recognition.start() : recognition.stop();
+        }
+
+        function quickAction(prompt) {
+            document.getElementById('user-input').value = prompt;
+            sendMessage();
+        }
+
+        // async function sendMessage() {
+        //     const input = document.getElementById('user-input');
+        //     const message = input.value.trim();
+        //     if (!message) return;
+
+        //     // Add user message
+        //     addMessage(message, 'user');
+        //     input.value = '';
+
+        //     // Add loading
+        //     const loading = addMessage('Generating response...', 'bot loading');
+
+        //     try {
+        //         const response = await fetch('/chat', {
+        //             method: 'POST',
+        //             headers: { 'Content-Type': 'application/json' },
+        //             body: JSON.stringify({
+        //                 message: message,
+        //                 user_id: userId
+        //             })
+        //         });
+                
+        //         const data = await response.json();
+        //         chatContainer.removeChild(loading);
+        //         addMessage(data.response, 'bot');
+                
+        //         // Speak response
+        //         if ('speechSynthesis' in window) {
+        //             const utterance = new SpeechSynthesisUtterance(data.response);
+        //             speechSynthesis.speak(utterance);
+        //         }
+                
+        //         // Load history
+        //         loadHistory();
+
+        //     } catch (error) {
+        //         chatContainer.removeChild(loading);
+        //         addMessage("⚠️ Connection error. Please try again.", 'bot error');
+        //     }
+        // }
+        async function sendMessage() {
+    const input = document.getElementById('user-input');
+    const message = input.value.trim();
+    if (!message) return;
+
+    // Add user message
+    addMessage(message, 'user');
+    input.value = '';
+
+    // Add loading message
+    const loading = addMessage('Generating response...', 'bot loading');
+
+    try {
+        const response = await fetch('/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: message, user_id: userId })
+        });
+
+        const data = await response.json();
+        document.getElementById('chat-container').removeChild(loading);  // Ensure removal
+
+        if (!data.response || data.response.startsWith("⚠️ Error")) {
+            addMessage("⚠️ Failed to get a response. Please try again.", 'bot error');
+        } else {
+            addMessage(data.response, 'bot');
+        }
+
+    } catch (error) {
+        document.getElementById('chat-container').removeChild(loading);
+        addMessage("⚠️ Connection error. Please check the server and try again.", 'bot error');
+    }
+}
+
+        async function loadHistory() {
+            try {
+                const response = await fetch(`/history/${userId}`);
+                const history = await response.json();
+                
+                const chatContainer = document.getElementById('chat-container');
+                chatContainer.innerHTML = '';
+                
+                history.forEach(entry => {
+                    addMessage(entry.user, 'user');
+                    addMessage(entry.bot, 'bot');
+                });
+                
+            } catch (error) {
+                console.error('Error loading history:', error);
+            }
+        }
+
+        function addMessage(text, type = 'user') {
+            const chatDiv = document.getElementById('chat-container');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            messageDiv.innerHTML = text.replace(/\n/g, '<br>');
+            chatDiv.appendChild(messageDiv);
+            chatDiv.scrollTop = chatDiv.scrollHeight;
+            return messageDiv;
+        }
+
+        // Initial history load
+        loadHistory();
+    </script>
+</body>
+</html> -->
+
+
+
+
+
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wanderlust</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="background-wrapper"></div>
+    
+    <div class="container">
+        <div class="chat-box">
+            <div class="header">
+                <h1>🗺️ Globetrotter Guide</h1>
+                <div class="quick-actions">
+                    <button onclick="quickAction('3-day Paris itinerary under $1000')">Paris Budget</button>
+                    <button onclick="quickAction('Family-friendly Tokyo 5-day plan')">Tokyo Family</button>
+                    <button onclick="quickAction('Romantic Bali getaway plan')">Bali Honeymoon</button>
+                </div>
+            </div>
+            
+            <div class="chat-area" id="chat-container"></div>
+            
+            <div class="input-section">
+                <button class="icon-btn" onclick="toggleVoice()">
+                    <span id="mic-icon">🎤</span>
+                </button>
+                <input type="text" id="user-input" 
+                    placeholder="Ask or speak your travel question..."
+                    autocomplete="off">
+                <button onclick="sendMessage()">Send ➤</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let recognition;
+        let isListening = false;
+        const userId = Date.now().toString(); // Simple user ID
+
+        // Initialize voice recognition
+        if ('webkitSpeechRecognition' in window) {
+            recognition = new webkitSpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                document.getElementById('user-input').value = transcript;
+                toggleVoice();
+            };
+
+            recognition.onerror = (event) => {
+                console.error('Speech recognition error:', event.error);
+                toggleVoice();
+            };
+        }
+
+        function toggleVoice() {
+            if (!recognition) {
+                alert('Speech recognition not supported in this browser');
+                return;
+            }
+            
+            isListening = !isListening;
+            document.getElementById('mic-icon').textContent = isListening ? '🔴' : '🎤';
+            isListening ? recognition.start() : recognition.stop();
+        }
+
+        function quickAction(prompt) {
+            document.getElementById('user-input').value = prompt;
+            sendMessage();
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('user-input');
+            const message = input.value.trim();
+            if (!message) return;
+
+            // Add user message
+            addMessage(message, 'user');
+            input.value = '';
+
+            // Add loading message
+            const loading = addMessage('Generating response...', 'bot loading');
+
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: message, user_id: userId })
+                });
+
+                const data = await response.json();
+                document.getElementById('chat-container').removeChild(loading);  // Ensure removal
+
+                if (!data.response || data.response.startsWith("⚠️ Error")) {
+                    addMessage("⚠️ Failed to get a response. Please try again.", 'bot error');
+                } else {
+                    addMessage(data.response, 'bot');
+                }
+
+            } catch (error) {
+                document.getElementById('chat-container').removeChild(loading);
+                addMessage("⚠️ Connection error. Please check the server and try again.", 'bot error');
+            }
+        }
+
+        async function loadHistory() {
+            try {
+                const response = await fetch(`/history/${userId}`);
+                const history = await response.json();
+                
+                const chatContainer = document.getElementById('chat-container');
+                chatContainer.innerHTML = '';
+                
+                history.forEach(entry => {
+                    addMessage(entry.user, 'user');
+                    addMessage(entry.bot, 'bot');
+                });
+                
+            } catch (error) {
+                console.error('Error loading history:', error);
+            }
+        }
+
+        function addMessage(text, type = 'user') {
+            const chatDiv = document.getElementById('chat-container');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            messageDiv.innerHTML = text.replace(/\n/g, '<br>');
+            chatDiv.appendChild(messageDiv);
+            chatDiv.scrollTop = chatDiv.scrollHeight;
+            return messageDiv;
+        }
+
+        // Initial history load
+        loadHistory();
+    </script>
+</body>
+</html>
